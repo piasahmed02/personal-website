@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CGPA Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #222636;
+      --border: #2e3348;
+      --border2: #3d4261;
+      --accent: #6c63ff;
+      --accent2: #a78bfa;
+      --accent-glow: rgba(108, 99, 255, 0.18);
+      --text: #e8e9f0;
+      --text2: #9094b0;
+      --text3: #5d6180;
+      --green: #34d399;
+      --blue: #60a5fa;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ─── Header ─── */
+    header {
+      width: 100%;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .logo-dot {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-dot svg { width: 18px; height: 18px; fill: #fff; }
+
+    header h1 {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+    header span {
+      font-size: 13px;
+      color: var(--text3);
+      margin-left: 4px;
+    }
+
+    /* ─── Main layout ─── */
+    main {
+      width: 100%;
+      max-width: 700px;
+      padding: 40px 24px 80px;
+      flex: 1;
+    }
+
+    /* ─── Step indicator ─── */
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 40px;
+    }
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+    .step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text3);
+      flex-shrink: 0;
+      transition: all 0.25s;
+    }
+    .step-num.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+    .step-num.done {
+      background: var(--surface2);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .step-label {
+      font-size: 12px;
+      color: var(--text3);
+      font-weight: 500;
+      transition: color 0.25s;
+    }
+    .step-label.active { color: var(--text); }
+    .step-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      margin: 0 8px;
+    }
+
+    /* ─── Cards / sections ─── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+    .section-sub {
+      font-size: 14px;
+      color: var(--text2);
+      margin-bottom: 28px;
+    }
+
+    /* ─── Form elements ─── */
+    .field { margin-bottom: 20px; }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text2);
+      margin-bottom: 8px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 15px;
+      padding: 11px 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    input.error { border-color: var(--red); }
+    input::placeholder { color: var(--text3); }
+
+    .error-msg {
+      font-size: 12px;
+      color: var(--red);
+      margin-top: 5px;
+    }
+
+    /* ─── Buttons ─── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.18s;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+    .btn-primary:hover { background: #7c75ff; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text2);
+      border: 1.5px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+    }
+    .btn-row .btn-primary { flex: 1; justify-content: center; }
+
+    /* ─── Course count input ─── */
+    .count-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      width: fit-content;
+    }
+    .count-input-wrap input {
+      background: transparent;
+      border: none;
+      width: 80px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent);
+      padding: 12px 8px;
+      box-shadow: none;
+    }
+    .count-btn {
+      width: 48px; height: 60px;
+      background: transparent;
+      border: none;
+      color: var(--text2);
+      font-size: 22px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .count-btn:hover { background: var(--border); color: var(--text); }
+
+    /* ─── Course row cards ─── */
+    .course-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    .course-card:focus-within { border-color: var(--border2); }
+    .course-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .course-num {
+      width: 26px; height: 26px;
+      background: var(--accent-glow);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .course-card-header span {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+    }
+    .course-grid {
+      display: grid;
+      grid-template-columns: 1fr 120px;
+      gap: 12px;
+    }
+
+    /* ─── Mark rows ─── */
+    .mark-row {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      gap: 16px;
+      transition: border-color 0.2s;
+    }
+    .mark-row:focus-within { border-color: var(--border2); }
+    .mark-code-badge {
+      background: var(--accent-glow);
+      color: var(--accent2);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .mark-credit {
+      font-size: 12px;
+      color: var(--text3);
+      white-space: nowrap;
+    }
+    .mark-input-wrap {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mark-input-wrap input {
+      width: 90px;
+      text-align: center;
+    }
+    .mark-input-wrap .of { font-size: 12px; color: var(--text3); }
+
+    /* ─── Result page ─── */
+    .cgpa-hero {
+      text-align: center;
+      padding: 36px 24px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cgpa-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% -20%, var(--accent-glow) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .cgpa-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 12px;
+    }
+    .cgpa-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 72px;
+      font-weight: 700;
+      letter-spacing: -3px;
+      line-height: 1;
+      margin-bottom: 14px;
+    }
+    .cgpa-badge {
+      display: inline-block;
+      padding: 6px 20px;
+      border-radius: 40px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 18px;
+    }
+    .cgpa-meta {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+    }
+    .meta-item { text-align: center; }
+    .meta-val {
+      font-size: 20px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .meta-lbl {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    /* Color themes */
+    .theme-green .cgpa-value { color: var(--green); }
+    .theme-green .cgpa-badge { background: rgba(52,211,153,0.12); color: var(--green); }
+    .theme-blue .cgpa-value { color: var(--blue); }
+    .theme-blue .cgpa-badge { background: rgba(96,165,250,0.12); color: var(--blue); }
+    .theme-amber .cgpa-value { color: var(--amber); }
+    .theme-amber .cgpa-badge { background: rgba(251,191,36,0.12); color: var(--amber); }
+    .theme-red .cgpa-value { color: var(--red); }
+    .theme-red .cgpa-badge { background: rgba(248,113,113,0.12); color: var(--red); }
+
+    /* ─── Course results table ─── */
+    .result-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text3);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .result-row {
+      display: flex;
+      align-items: center;
+      padding: 13px 16px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      gap: 12px;
+    }
+    .result-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent2);
+      flex: 2;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .result-mark {
+      font-size: 14px;
+      color: var(--text2);
+      flex: 1;
+      text-align: center;
+    }
+    .result-letter {
+      width: 36px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .result-gp {
+      width: 48px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* grade colors */
+    .g-a { background: rgba(52,211,153,0.12); color: var(--green); }
+    .g-b { background: rgba(96,165,250,0.12); color: var(--blue); }
+    .g-c { background: rgba(251,191,36,0.12); color: var(--amber); }
+    .g-f { background: rgba(248,113,113,0.12); color: var(--red); }
+    .gp-a { color: var(--green); }
+    .gp-b { color: var(--blue); }
+    .gp-c { color: var(--amber); }
+    .gp-f { color: var(--red); }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 520px) {
+      header { padding: 16px 20px; }
+      main { padding: 28px 16px 60px; }
+      .course-grid { grid-template-columns: 1fr; }
+      .cgpa-value { font-size: 56px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-dot">
+    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+  </div>
+  <h1>CGPA Calculator <span>/ Semester</span></h1>
+</header>
+
+<main>
+  <!-- Step indicator -->
+  <div class="steps">
+    <div class="step-item">
+      <div class="step-num active" id="sn1">1</div>
+      <div class="step-label active" id="sl1">Courses</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item">
+      <div class="step-num" id="sn2">2</div>
+      <div class="step-label" id="sl2">Details</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item">
+      <div class="step-num" id="sn3">3</div>
+      <div class="step-label" id="sl3">Marks</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item">
+      <div class="step-num" id="sn4">4</div>
+      <div class="step-label" id="sl4">Result</div>
+    </div>
+  </div>
+
+  <!-- Screen 1: Count -->
+  <div class="screen active" id="screen1">
+    <h2 class="section-title">How many courses?</h2>
+    <p class="section-sub">Enter the number of courses you took this semester.</p>
+    <div class="count-input-wrap">
+      <button class="count-btn" id="dec">−</button>
+      <input type="number" id="courseCount" value="4" min="1" max="20" />
+      <button class="count-btn" id="inc">+</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="toStep2">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Screen 2: Course details -->
+  <div class="screen" id="screen2">
+    <h2 class="section-title">Course details</h2>
+    <p class="section-sub">Enter the code and credit hours for each course.</p>
+    <div id="courseCards"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="back2">← Back</button>
+      <button class="btn btn-primary" id="toStep3">Enter Marks →</button>
+    </div>
+  </div>
+
+  <!-- Screen 3: Marks -->
+  <div class="screen" id="screen3">
+    <h2 class="section-title">Enter your marks</h2>
+    <p class="section-sub">Marks are out of 100 for each course.</p>
+    <div id="markRows"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="back3">← Back</button>
+      <button class="btn btn-primary" id="calculate">Calculate CGPA →</button>
+    </div>
+  </div>
+
+  <!-- Screen 4: Result -->
+  <div class="screen" id="screen4">
+    <div id="resultHero" class="cgpa-hero theme-green">
+      <div class="cgpa-label">Your CGPA</div>
+      <div class="cgpa-value" id="cgpaVal">0.00</div>
+      <div class="cgpa-badge" id="cgpaBadge">—</div>
+      <div class="cgpa-meta">
+        <div class="meta-item">
+          <div class="meta-val" id="totalCr">0</div>
+          <div class="meta-lbl">Total credits</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-val" id="courseTotal">0</div>
+          <div class="meta-lbl">Courses</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-val" id="avgMark">0</div>
+          <div class="meta-lbl">Avg mark</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-title">Course breakdown</div>
+    <div id="resultRows"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="resetBtn" style="justify-content:center">↺ Calculate Again</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  // ── State ──
+  let courses = []; // {code, credit, mark}
+
+  // ── Helpers ──
+  function getCGPA(m) {
+    if (m >= 80) return 4.00;
+    if (m >= 75) return 3.75;
+    if (m >= 70) return 3.50;
+    if (m >= 65) return 3.25;
+    if (m >= 60) return 3.00;
+    if (m >= 55) return 2.75;
+    if (m >= 50) return 2.50;
+    if (m >= 45) return 2.25;
+    if (m >= 40) return 2.00;
+    return 0.00;
+  }
+  function getGrade(m) {
+    if (m >= 80) return 'A+';
+    if (m >= 75) return 'A';
+    if (m >= 70) return 'A−';
+    if (m >= 65) return 'B+';
+    if (m >= 60) return 'B';
+    if (m >= 55) return 'B−';
+    if (m >= 50) return 'C+';
+    if (m >= 45) return 'C';
+    if (m >= 40) return 'D';
+    return 'F';
+  }
+  function gradeClass(m) {
+    if (m >= 60) return 'g-a';
+    if (m >= 50) return 'g-b';
+    if (m >= 40) return 'g-c';
+    return 'g-f';
+  }
+  function gpClass(m) {
+    if (m >= 60) return 'gp-a';
+    if (m >= 50) return 'gp-b';
+    if (m >= 40) return 'gp-c';
+    return 'gp-f';
+  }
+
+  function showScreen(n) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen' + n).classList.add('active');
+    // Update step indicators
+    for (let i = 1; i <= 4; i++) {
+      const num = document.getElementById('sn' + i);
+      const lbl = document.getElementById('sl' + i);
+      num.className = 'step-num' + (i === n ? ' active' : i < n ? ' done' : '');
+      lbl.className = 'step-label' + (i === n ? ' active' : '');
+      num.textContent = i < n ? '✓' : i;
+    }
+  }
+
+  function err(input, msg) {
+    input.classList.add('error');
+    let e = input.nextElementSibling;
+    if (!e || !e.classList.contains('error-msg')) {
+      e = document.createElement('div');
+      e.className = 'error-msg';
+      input.after(e);
+    }
+    e.textContent = msg;
+  }
+  function clearErr(input) {
+    input.classList.remove('error');
+    const e = input.nextElementSibling;
+    if (e && e.classList.contains('error-msg')) e.remove();
+  }
+
+  // ── Step 1 → 2 ──
+  document.getElementById('dec').onclick = () => {
+    const i = document.getElementById('courseCount');
+    if (+i.value > 1) i.value = +i.value - 1;
+  };
+  document.getElementById('inc').onclick = () => {
+    const i = document.getElementById('courseCount');
+    if (+i.value < 20) i.value = +i.value + 1;
+  };
+
+  document.getElementById('toStep2').onclick = () => {
+    const val = +document.getElementById('courseCount').value;
+    if (!val || val < 1 || val > 20) return;
+    const n = Math.floor(val);
+    const cards = document.getElementById('courseCards');
+    cards.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+      cards.innerHTML += `
+        <div class="course-card">
+          <div class="course-card-header">
+            <div class="course-num">${i + 1}</div>
+            <span>Course ${i + 1}</span>
+          </div>
+          <div class="course-grid">
+            <div class="field">
+              <label>Course code</label>
+              <input type="text" id="code${i}" placeholder="e.g. CSE101" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label>Credit hours</label>
+              <input type="number" id="cr${i}" placeholder="3.0" min="0.5" max="6" step="0.5" />
+            </div>
+          </div>
+        </div>`;
+    }
+    showScreen(2);
+  };
+
+  // ── Step 2 → 3 ──
+  document.getElementById('back2').onclick = () => showScreen(1);
+
+  document.getElementById('toStep3').onclick = () => {
+    const n = Math.floor(+document.getElementById('courseCount').value);
+    let valid = true;
+    courses = [];
+    for (let i = 0; i < n; i++) {
+      const ci = document.getElementById('code' + i);
+      const cri = document.getElementById('cr' + i);
+      clearErr(ci); clearErr(cri);
+      if (!ci.value.trim()) { err(ci, 'Enter a course code'); valid = false; }
+      const cr = parseFloat(cri.value);
+      if (!cri.value || isNaN(cr) || cr <= 0) { err(cri, 'Enter valid credit'); valid = false; }
+      if (valid) courses.push({ code: ci.value.trim().toUpperCase(), credit: cr });
+    }
+    if (!valid) return;
+    const rows = document.getElementById('markRows');
+    rows.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+      rows.innerHTML += `
+        <div class="mark-row">
+          <div class="mark-code-badge">${courses[i].code}</div>
+          <div class="mark-credit">${courses[i].credit} cr</div>
+          <div class="mark-input-wrap">
+            <input type="number" id="mk${i}" placeholder="0" min="0" max="100" step="0.5" />
+            <span class="of">/ 100</span>
+          </div>
+        </div>`;
+    }
+    showScreen(3);
+  };
+
+  // ── Step 3 → 4 ──
+  document.getElementById('back3').onclick = () => showScreen(2);
+
+  document.getElementById('calculate').onclick = () => {
+    let valid = true;
+    for (let i = 0; i < courses.length; i++) {
+      const mi = document.getElementById('mk' + i);
+      clearErr(mi);
+      const m = parseFloat(mi.value);
+      if (mi.value === '' || isNaN(m) || m < 0 || m > 100) {
+        err(mi, '0–100'); valid = false;
+      } else {
+        courses[i].mark = m;
+      }
+    }
+    if (!valid) return;
+
+    // Calculate
+    let totalWeighted = 0, totalCredit = 0, totalMark = 0;
+    for (const c of courses) {
+      totalWeighted += getCGPA(c.mark) * c.credit;
+      totalCredit += c.credit;
+      totalMark += c.mark;
+    }
+    const cgpa = totalWeighted / totalCredit;
+    const avgMark = totalMark / courses.length;
+
+    // Theme
+    let theme = 'theme-green', badge = 'Excellent';
+    if (cgpa < 2.00) { theme = 'theme-red'; badge = 'Below Average'; }
+    else if (cgpa < 3.00) { theme = 'theme-amber'; badge = 'Average'; }
+    else if (cgpa < 3.50) { theme = 'theme-blue'; badge = 'Good'; }
+
+    const hero = document.getElementById('resultHero');
+    hero.className = 'cgpa-hero ' + theme;
+    document.getElementById('cgpaVal').textContent = cgpa.toFixed(2);
+    document.getElementById('cgpaBadge').textContent = badge;
+    document.getElementById('totalCr').textContent = totalCredit.toFixed(1);
+    document.getElementById('courseTotal').textContent = courses.length;
+    document.getElementById('avgMark').textContent = avgMark.toFixed(1);
+
+    const rr = document.getElementById('resultRows');
+    rr.innerHTML = '';
+    for (const c of courses) {
+      const gp = getCGPA(c.mark);
+      const gr = getGrade(c.mark);
+      rr.innerHTML += `
+        <div class="result-row">
+          <div class="result-code">${c.code}</div>
+          <div class="result-mark">${c.mark.toFixed(1)}</div>
+          <div class="result-letter ${gradeClass(c.mark)}">${gr}</div>
+          <div class="result-gp ${gpClass(c.mark)}">${gp.toFixed(2)}</div>
+        </div>`;
+    }
+    showScreen(4);
+  };
+
+  document.getElementById('resetBtn').onclick = () => {
+    courses = [];
+    document.getElementById('courseCount').value = 4;
+    showScreen(1);
+  };
+</script>
+</body>
+</html>
